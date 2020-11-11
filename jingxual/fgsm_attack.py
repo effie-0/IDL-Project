@@ -43,3 +43,16 @@ def testattack(net, testloader, epsilon):
     print("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(epsilon, correct, len(testloader), acc))
 
     return acc
+
+
+epsilons = [0, .05, .1, .15, .2, .25, .3]
+# use_cuda=True
+
+"""Load Model"""
+modelpath = path + "Adc_ResNet50_29.pth"
+loadmodel = ResNet50().to(device)
+loadmodel.load_state_dict(torch.load(modelpath)['model_state_dict'])
+
+for eps in epsilons:
+    acc = testattack(loadmodel, attackloader, eps)
+    accuracies.append(acc)
