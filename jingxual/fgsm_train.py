@@ -21,8 +21,6 @@ def train(net, epoch):
         del inputs
         del targets
 
-        # progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-        #              % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
     acc = correct/total
     avg_loss = train_loss/total
     
