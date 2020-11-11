@@ -1,3 +1,10 @@
+def fgsm_attack(image, epsilon, data_grad):
+    # Collect the element-wise sign of the data gradient
+    sign_data_grad = data_grad.sign()
+    # Create the perturbed image by adjusting each pixel of the input image
+    perturbed_image = image + epsilon*sign_data_grad
+    return perturbed_image
+
 def testattack(net, testloader, epsilon):
     # global best_acc
     net.eval()
