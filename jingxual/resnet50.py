@@ -9,109 +9,67 @@ def conv1x1(in_channels, out_channels, stride=1):
 
 num_classes = 10
 class Bottleneck(nn.Module):
-    def __init__(self, inchannel, outchannel, stride=1, isDownSample=False):
-        super(Bottleneck, self).__init__()
-        
-        self.inchannel = inchannel
-        self.expansion = 4
-        self.isDownSample = isDownSample
-        
-        self.conv1 = conv1x1(inchannel, outchannel)
-        self.norm1 = nn.BatchNorm2d(outchannel)
+    expansion = 4
 
-        self.conv2 = conv3x3(outchannel, outchannel, stride)
-        self.norm2 = nn.BatchNorm2d(outchannel)
-        
-        self.conv3 = conv1x1(outchannel, outchannel * self.expansion)
-        self.norm3 = nn.BatchNorm2d(outchannel * self.expansion)
-        
-        self.relu = nn.ReLU(inplace=True)
-        
-        if isDownSample:
-            self.downsample = nn.Sequential(
-                conv1x1(inchannel, outchannel * self.expansion, stride),
-                nn.BatchNorm2d(outchannel * self.expansion)
+    def __init__(self, in_planes, planes, stride=1):
+        super(Bottleneck, self).__init__()
+        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3,
+                               stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.conv3 = nn.Conv2d(planes, self.expansion *
+                               planes, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(self.expansion*planes)
+
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_planes != self.expansion*planes:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_planes, self.expansion*planes,
+                          kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(self.expansion*planes)
             )
 
     def forward(self, x):
-        identity = x
-
-        out = self.relu(self.norm1(self.conv1(x)))
-        out = self.relu(self.norm2(self.conv2(out)))
-        out = self.relu(self.norm3(self.conv3(out)))
-
-        if self.isDownSample:
-            out += self.downsample(identity)
-        
-        out = self.relu(out)
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = F.relu(self.bn2(self.conv2(out)))
+        out = self.bn3(self.conv3(out))
+        out += self.shortcut(x)
+        out = F.relu(out)
         return out
 
 
-class ResNet50(nn.Module):
-    def __init__(self, block, layers, num_classes=num_classes, outs=[64, 128, 256, 512]):
-        super(ResNet50, self).__init__()
-        """
-        Arguments:
-            block (class): BasicBlock(nn.Module)
-            layers (list): A ResNet’s layer is composed of the same blocks stacked one after the other.
-            num_classes (int): num_classes = 4000
-            outs (list): dim before expension(*4)
-        """
-        self.expansion = 4
-        self.inchannel = 64*self.expansion
-        self.conv0 = conv3x3(3, 64*self.expansion, stride=1)
-        
-        self.layer1=self.make_layer(block,outs[0],layers[0],stride=1) # 3
-        self.layer2=self.make_layer(block,outs[1],layers[1],stride=2) # 4
-        self.layer3=self.make_layer(block,outs[2],layers[2],stride=2) # 6
-        self.layer4=self.make_layer(block,outs[3],layers[3],stride=2) # 3
+class ResNet(nn.Module):
+    def __init__(self, block, num_blocks, num_classes=10):
+        super(ResNet, self).__init__()
+        self.in_planes = 64
 
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512*4, num_classes)
-        
-        # self.cfc = nn.Linear(512*4, outFeat)
-        # self.crelu = nn.ReLU(inplace=True)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3,
+                               stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(64)
+        self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
+        self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
+        self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
+        self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
+        self.linear = nn.Linear(512*block.expansion, num_classes)
 
-    def make_layer(self, block, out_channels, block_num, stride=1):
-        """
-            block (class): BottleneckBlock(nn.Module)
-            out_channels (int)：output size of layer
-            block_num (int)：total blocks
-            stride (int)：Conv Block stride
-        """
-
-        if stride!=1 or self.inchannel!=(out_channels*self.expansion):
-            isDownsample = True
-        else: isDownsample = False
-            
+    def _make_layer(self, block, planes, num_blocks, stride):
+        strides = [stride] + [1]*(num_blocks-1)
         layers = []
-        #Conv Block: different size
-        conv_block=block(self.inchannel, out_channels, stride, isDownsample)
-        layers.append(conv_block)
-        self.inchannel = out_channels*self.expansion
-        
-        #Identity Block: same size
-        for i in range(1, block_num):
-            layers.append(block(self.inchannel, out_channels))
+        for stride in strides:
+            layers.append(block(self.in_planes, planes, stride))
+            self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
 
-    def forward(self, x, ver=False):
-        out = x
-        out = self.conv0(out)
-
-        out=self.layer1(out)
-        out=self.layer2(out)
-        out=self.layer3(out)
-        out=self.layer4(out)
-
-        out = self.avgpool(out)
-        # out = torch.squeeze(out)
-        out = out.reshape(out.shape[0], out.shape[1])
-        
-        # embed = out
-        out = self.fc(out)
-        # cout = self.cfc(out)
-        # cout = self.crelu(cout)
+    def forward(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        out = F.avg_pool2d(out, 4)
+        out = out.view(out.size(0), -1)
+        out = self.linear(out)
         return out
 
 def init_weights(m):
