@@ -92,3 +92,14 @@ def fgsm_train(net, epoch, eps=0.01):
     avg_loss = train_loss/total
     
     return avg_loss, acc
+
+for epoch in range(start_epoch, start_epoch+30):
+    train_loss, train_acc = train(resmodel, epoch)
+    adv_train_loss, adv_train_acc = fgsm_train(resmodel, epoch)
+    val_loss, val_acc = test(resmodel, epoch)
+    
+    print('[Epoch: {}]\nTrain Loss: {:.4f}\tTrain Accuracy: {:.4f}\tAdv_Train Loss: {:.4f}\tAdv_Train Accuracy: {:.4f}\nVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
+          format(epoch, train_loss, train_acc, adv_train_loss, adv_train_acc, val_loss, val_acc))
+    
+    if (epoch+1)%10 == 0:
+        torch.save({'model_state_dict': resmodel.state_dict(),},
