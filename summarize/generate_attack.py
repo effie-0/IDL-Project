@@ -2,7 +2,7 @@ from .attack import fgsm_attack
 import torch
 import torch.nn.functional as F
 
-def generate_fgsm_attack(model, test_loader, test_dataset, epsilon, device):
+def generate_fgsm_attack(model, criterion, test_loader, test_dataset, epsilon, device):
     '''
     return: accuracy, attack instance generated, and laebl 
     '''
@@ -29,7 +29,7 @@ def generate_fgsm_attack(model, test_loader, test_dataset, epsilon, device):
         mask = torch.eq(init_pred.flatten(), target.flatten()).float()
 
         # Calculate the loss
-        loss = F.nll_loss(output, target)
+        loss = criterion(output, target)
 
         # Zero all existing gradients
         model.zero_grad()
