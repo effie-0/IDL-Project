@@ -13,8 +13,10 @@ class AdvDataset(Dataset):
         return self.data[idx], self.label[idx]
 
 
-def get_data(batch_size=64, num_wrokers=4, return_classes = False, verbose = False):
+def get_data(batch_size=512, num_wrokers=4, return_classes = False, verbose = False):
     '''
+    batch_size: default 512!!
+    
     get CIFAR-10 dataset
     
     return: trainset, trainloader, testset, testloader, (classes)
