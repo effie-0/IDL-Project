@@ -1,3 +1,4 @@
+from os import device_encoding
 import torch
 import numpy as np
 import torch.nn.functional as F
@@ -93,7 +94,7 @@ def train(model, train_loader, test_loader, optimizer, criterion, epochs, device
             }, "Model_"+str(epoch))
         
             
-        val_loss, val_acc = evaluate(model, test_loader, criterion)
+        val_loss, val_acc = evaluate(model, test_loader, criterion, device)
         
         print('epoch: %d\t'%(epoch+1),  'time: %d m: %d s '% divmod(time.time() - start_time, 60))
         start_time = time.time()
