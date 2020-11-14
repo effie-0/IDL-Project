@@ -13,7 +13,7 @@ class AdvDataset(Dataset):
         return self.data[idx], self.label[idx]
 
 
-def get_data(return_classes = False, verbose = False):
+def get_data(batch_size=64, num_wrokers=4, return_classes = False, verbose = False):
     '''
     get CIFAR-10 dataset
     
@@ -33,13 +33,15 @@ def get_data(return_classes = False, verbose = False):
 
     trainset = datasets.CIFAR10(root='./data', train=True, 
                                 download=True, transform=transform_train)
-    trainloader = data.DataLoader(trainset, batch_size=4, 
-                                shuffle=True, num_workers=2)
+    trainloader = data.DataLoader(trainset, batch_size=batch_size, 
+                                shuffle=True,
+                                num_workers=num_wrokers)
 
     testset = datasets.CIFAR10(root='./data', train=False, 
                             download=True, transform=transform_test)
-    testloader = data.DataLoader(testset, batch_size=1, 
-                                shuffle=False, num_workers=2)
+    testloader = data.DataLoader(testset, batch_size=batch_size, 
+                                shuffle=False,
+                                num_workers=num_wrokers)
 
     classes = ('plane', 'car', 'bird', 'cat',
             'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
