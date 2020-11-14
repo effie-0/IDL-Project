@@ -32,8 +32,8 @@ def evaluate(model, test_loader, criterion, device, return_pred=False):
         total = len(test_loader.dataset)
         running_loss /= total
         acc = (correct_predictions/total)*100.0
-        print('Testing Loss: ', running_loss)
-        print('Testing Accuracy: ', acc, '%')
+        # print('Testing Loss: ', running_loss)
+        # print('Testing Accuracy: ', acc, '%')
         if return_pred:
             pred = np.concatenate(pred)
             return running_loss, acc, pred
