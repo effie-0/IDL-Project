@@ -1,5 +1,3 @@
-import sys
-
 from summarize.attack import fgsm_attack
 import torch
 import torch.nn.functional as F
