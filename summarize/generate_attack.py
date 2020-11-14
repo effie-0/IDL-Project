@@ -1,3 +1,5 @@
+import sys
+
 from .attack import fgsm_attack
 import torch
 import torch.nn.functional as F
@@ -10,7 +12,6 @@ def generate_fgsm_attack(model, criterion, test_loader, test_dataset, epsilon, d
     # Accuracy counter
     correct = 0
     adv_examples = []
-    pred_list = []
 
     # Loop over all examples in test set
     for data, target in test_loader:

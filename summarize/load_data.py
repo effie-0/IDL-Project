@@ -12,6 +12,12 @@ class AdvDataset(Dataset):
     def __getitem__(self, idx):
         return self.data[idx], self.label[idx]
 
+def load_model(model, optimizer, file_name, scheduler=None ):
+    temp = torch.load(file_name) 
+    model.load_state_dict(temp['model_state_dict'])
+    optimizer.load_state_dict(temp['optimizer_state_dict'])
+    if scheduler is not None:
+        scheduler.load_state_dict(temp['scheduler_state_dict'])
 
 def get_data(batch_size=512, num_wrokers=4, return_classes = False, verbose = False):
     '''
@@ -54,3 +60,4 @@ def get_data(batch_size=512, num_wrokers=4, return_classes = False, verbose = Fa
         return trainset, trainloader, testset, testloader, classes
     else:
         return trainset, trainloader, testset, testloader
+    
