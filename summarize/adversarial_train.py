@@ -3,8 +3,8 @@ import numpy as np
 import time
 import copy
 import torch.nn.functional as F
-from .attack import fgsm_attack
-from .normal_train import evaluate
+from summarize.attack import fgsm_attack
+from summarize.normal_train import evaluate
 
 def adv_train(model, train_loader, attack_loader, optimizer, scheduler, criterion, epsilon, epochs, device, save_model = False):
     '''
