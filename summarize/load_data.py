@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 class AdvDataset(Dataset):
     def __init__(self, data, label):
         self.data = torch.Tensor(data)
-        self.label = torch.Tensor(label)
+        self.label = torch.Tensor(label).long()
     def __len__(self):
         return len(self.data)
     def __getitem__(self, idx):
