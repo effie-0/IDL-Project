@@ -1,5 +1,31 @@
 import torch
-from .generate_attack import get_grad
+
+
+def get_grad(model, criterion, data, target, device):
+    # Send the data and label to the device
+    data, target = data.to(device), target.to(device)
+
+    # Set requires_grad attribute of tensor. Important for Attack
+    data.requires_grad = True
+
+    # Forward pass the data through the model
+    output = model(data)
+    init_pred = output.max(1, keepdim=True)[1] # get the index of the max log-probability
+
+    # mask: 1 for correct, only update grad on correct image
+    mask = torch.eq(init_pred.flatten(), target.flatten()).float()
+
+    # Calculate the loss
+    loss = criterion(output, target)
+
+    # Zero all existing gradients
+    model.zero_grad()
+
+    # Calculate gradients of model in backward pass
+    loss.backward()
+
+    # Collect datagrad
+    return data.grad.data, mask
 
 
 def fgsm_attack(image, epsilon, data_grad, mask=None, model=None, criterion=None, data=None, target=None, device=None):
