@@ -1,8 +1,36 @@
-from summarize.attack import fgsm_attack
+from .attack import fgsm_attack, mi_fgsm_attack
 import torch
 import torch.nn.functional as F
 
-def generate_fgsm_attack(model, criterion, test_loader, test_dataset, epsilon, device):
+
+def get_grad(model, criterion, data, target, device):
+    # Send the data and label to the device
+    data, target = data.to(device), target.to(device)
+
+    # Set requires_grad attribute of tensor. Important for Attack
+    data.requires_grad = True
+
+    # Forward pass the data through the model
+    output = model(data)
+    init_pred = output.max(1, keepdim=True)[1] # get the index of the max log-probability
+
+    # mask: 1 for correct, only update grad on correct image
+    mask = torch.eq(init_pred.flatten(), target.flatten()).float()
+
+    # Calculate the loss
+    loss = criterion(output, target)
+
+    # Zero all existing gradients
+    model.zero_grad()
+
+    # Calculate gradients of model in backward pass
+    loss.backward()
+
+    # Collect datagrad
+    return data.grad.data, mask
+
+
+def generate_attack(model, criterion, attack, test_loader, test_dataset, epsilon, device):
     '''
     return: accuracy, attack instance generated, and laebl 
     '''
@@ -13,34 +41,10 @@ def generate_fgsm_attack(model, criterion, test_loader, test_dataset, epsilon, d
 
     # Loop over all examples in test set
     for data, target in test_loader:
+        data_grad, mask = get_grad(model, criterion, data, target, device)
 
-        # Send the data and label to the device
-        data, target = data.to(device), target.to(device)
-
-        # Set requires_grad attribute of tensor. Important for Attack
-        data.requires_grad = True
-
-        # Forward pass the data through the model
-        output = model(data)
-        init_pred = output.max(1, keepdim=True)[1] # get the index of the max log-probability
-
-        # mask: 1 for correct, only update grad on correct image
-        mask = torch.eq(init_pred.flatten(), target.flatten()).float()
-
-        # Calculate the loss
-        loss = criterion(output, target)
-
-        # Zero all existing gradients
-        model.zero_grad()
-
-        # Calculate gradients of model in backward pass
-        loss.backward()
-
-        # Collect datagrad
-        data_grad = data.grad.data
-
-        # Call FGSM Attack
-        perturbed_data = fgsm_attack(data, epsilon, data_grad, mask)
+        # Call Attack
+        perturbed_data = attack(data, epsilon, data_grad, mask, model, criterion, data, target, device)
 
         # Re-classify the perturbed image
         output = model(perturbed_data)
@@ -65,6 +69,14 @@ def generate_fgsm_attack(model, criterion, test_loader, test_dataset, epsilon, d
 
     # Return the accuracy and an adversarial example
     return final_acc, adv_ex, label
+
+
+def generate_fgsm_attack(model, criterion, test_loader, test_dataset, epsilon, device):
+    return generate_attack(model, criterion, fgsm_attack, test_loader, test_dataset, epsilon, device)
+
+
+def generate_mi_fgsm_attack(model, criterion, test_loader, test_dataset, epsilon, device):
+    return generate_attack(model, criterion, mi_fgsm_attack, test_loader, test_dataset, epsilon, device)
 
 
 def grey_box_attack_test(model, attack_loader, device):
