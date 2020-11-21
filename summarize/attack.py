@@ -55,7 +55,7 @@ def mi_fgsm_attack(image, epsilon, data_grad, mask, model, criterion, data, targ
     alpha = epsilon / rounds
     grad = 0.0
     x = image.detach().clone()
-    for t in range(rounds):
+    for t in range(int(rounds)):
         if t != 0:
             data_grad, mask = get_grad(model, criterion, x, target, device)
         grad = decay_rate * grad + data_grad / torch.norm(data_grad, p=1)
