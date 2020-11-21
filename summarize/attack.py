@@ -1,10 +1,7 @@
 import torch
 
 
-def get_grad(model, criterion, data, target, device):
-    # Send the data and label to the device
-    data, target = data.to(device), target.to(device)
-
+def get_grad(model, criterion, data, target):
     # Set requires_grad attribute of tensor. Important for Attack
     data.requires_grad = True
 
@@ -28,7 +25,7 @@ def get_grad(model, criterion, data, target, device):
     return data.grad.data, mask
 
 
-def fgsm_attack(image, epsilon, data_grad, mask=None, model=None, criterion=None, data=None, target=None, device=None):
+def fgsm_attack(image, epsilon, data_grad, mask=None, model=None, criterion=None, data=None, target=None):
     '''
     image: batch x 3 x 32 x 32
     
@@ -50,14 +47,14 @@ def fgsm_attack(image, epsilon, data_grad, mask=None, model=None, criterion=None
     return perturbed_image
 
 
-def mi_fgsm_attack(image, epsilon, data_grad, mask, model, criterion, data, target, device, decay_rate=1.0):
+def mi_fgsm_attack(image, epsilon, data_grad, mask, model, criterion, data, target, decay_rate=1.0):
     rounds = 10.0
     alpha = epsilon / rounds
     grad = 0.0
-    x = image.detach().clone()
+    x = image
     for t in range(int(rounds)):
         if t != 0:
-            data_grad, mask = get_grad(model, criterion, x, target, device)
+            data_grad, mask = get_grad(model, criterion, x, target)
         grad = decay_rate * grad + data_grad / torch.norm(data_grad, p=1)
         if mask is None:
             sign_data_grad = data_grad.sign()

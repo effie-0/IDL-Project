@@ -14,6 +14,9 @@ def generate_attack(model, criterion, attack, test_loader, test_dataset, epsilon
 
     # Loop over all examples in test set
     for data, target in test_loader:
+         # Send the data and label to the device
+        data, target = data.to(device), target.to(device)
+
         data_grad, mask = get_grad(model, criterion, data, target, device)
 
         # Call Attack
