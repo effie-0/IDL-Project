@@ -17,7 +17,7 @@ def generate_attack(model, criterion, attack, test_loader, test_dataset, epsilon
          # Send the data and label to the device
         data, target = data.to(device), target.to(device)
 
-        data_grad, mask = get_grad(model, criterion, data, target, device)
+        data_grad, mask = get_grad(model, criterion, data, target)
 
         # Call Attack
         perturbed_data = attack(data, epsilon, data_grad, mask, model, criterion, data, target, device)
