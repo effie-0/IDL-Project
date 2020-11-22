@@ -3,8 +3,7 @@ import torch
 
 def get_grad(model, criterion, data, target):
     # Set requires_grad attribute of tensor. Important for Attack
-    if data.is_leaf:
-        data.requires_grad = True
+    data.requires_grad = True
 
     # Forward pass the data through the model
     output = model(data)
@@ -52,7 +51,7 @@ def mi_fgsm_attack(image, epsilon, data_grad, mask, model, criterion, data, targ
     rounds = 10.0
     alpha = epsilon / rounds
     grad = 0.0
-    x = image
+    x = image.detach().clone()
     for t in range(int(rounds)):
         if t != 0:
             data_grad, mask = get_grad(model, criterion, x, target)
@@ -63,4 +62,5 @@ def mi_fgsm_attack(image, epsilon, data_grad, mask, model, criterion, data, targ
             # Collect the element-wise sign of the data gradient
             sign_data_grad = torch.mul(data_grad.sign(), mask.view(-1, 1, 1, 1))
         x = x + alpha * sign_data_grad
+        x = x.detach().clone()
     return x
