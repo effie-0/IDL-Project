@@ -2,6 +2,7 @@ from torchvision import datasets, transforms
 from torch.utils import data
 import torch
 from torch.utils.data import Dataset
+import copy 
 
 class AdvDataset(Dataset):
     def __init__(self, data, label):
@@ -60,4 +61,19 @@ def get_data(batch_size=512, num_wrokers=4, return_classes = False, verbose = Fa
         return trainset, trainloader, testset, testloader, classes
     else:
         return trainset, trainloader, testset, testloader
-    
+
+
+
+
+def UnNormalize(tensor, mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]):
+        """
+        Convert the normalized picture back
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+        Returns:
+            Tensor: UnNormalized image.
+        """
+        temp = copy.deepcopy(tensor)
+        for i in range(tensor.shape[0]):
+            temp[i] = temp[i]*std[i]+mean[i]
+        return torch.clip(temp, 0, 1)
