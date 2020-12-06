@@ -25,7 +25,7 @@ def get_grad(model, criterion, data, target):
     return data.grad.data, mask
 
 
-def fgsm_attack(image, epsilon, data_grad, mask=None, model=None, criterion=None, data=None, target=None):
+def fgsm_attack(image, epsilon, data_grad, mask=None, model=None, criterion=None, target=None):
     '''
     image: batch x 3 x 32 x 32
     
@@ -47,7 +47,7 @@ def fgsm_attack(image, epsilon, data_grad, mask=None, model=None, criterion=None
     return perturbed_image
 
 
-def mi_fgsm_attack(image, epsilon, data_grad, mask, model, criterion, data, target, decay_rate=1.0):
+def mi_fgsm_attack(image, epsilon, data_grad, mask, model, criterion, target, decay_rate=1.0):
     rounds = 10.0
     alpha = epsilon / rounds
     grad = 0.0
