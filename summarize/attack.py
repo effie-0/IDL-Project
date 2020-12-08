@@ -1,7 +1,7 @@
 import torch
 
 
-def get_grad(model, criterion, data, target):
+def get_one_grad(model, criterion, data, target):
     # Set requires_grad attribute of tensor. Important for Attack
     data.requires_grad = True
 
