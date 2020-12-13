@@ -14,3 +14,12 @@
 ## SAP
 
 ## Super-Resolution-Based Defense
+- clean_images is the folder to store the original clean images.
+- perturbed_images is the folder to store the adversarial attack images.
+- denoised_images is the folder to store the wavelet denoised images.
+- recoverd_images is the folder to store the super resolved images.
+- attack.py is the file to generate attack samples.
+- cifarresnet.py is the file for defense classification.
+- components.py is the file for network components.
+- edsr.py is the file for image super resolution using EDSR.
+- denoising.py is the file for image wavelet denoising.
