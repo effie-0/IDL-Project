@@ -3,7 +3,7 @@
 - Team: IDL.dll
 
 ## Attacks
-- All the code (`.ipynb` files) related to attack experiments is in the `attacks/` folder.
+- All code (`.ipynb` files) related to attack experiments is in the `attacks/` folder.
 - Our FGSM and MI-FGSM implementations are in the [summarize/attack.py](https://github.com/effie-0/IDL-Project/blob/main/summarize/attack.py).
 - Caveat:
   - We use Google Colab Pro to run the code. Some blocks are related to loading the gdrive folder.
@@ -14,6 +14,7 @@
 ## SAP
 
 ## Super-Resolution-Based Defense
+- All code related to this part is in the `congzou/` folder.
 - clean_images is the folder to store the original clean images.
 - perturbed_images is the folder to store the adversarial attack images.
 - denoised_images is the folder to store the wavelet denoised images.
