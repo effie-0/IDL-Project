@@ -13,8 +13,9 @@
 
 ## SAP
 - All code (`.ipynb` files) related to SAP experiments is in the `jingxual/` folder.
-- Renet18.py is the file for network without SAP moudle.
-- Renet18SAP.py is the file for network with SAP moudle.
+- renet18.py is the file for building network without SAP moudle.
+- renet18SAP.py is the file for building network with SAP moudle.
+- SAP-like-networks.ipynb is the file for generating multiple SAP-like networks.
 
 ## Super-Resolution-Based Defense
 - All code related to this part is in the `congzou/` folder.
